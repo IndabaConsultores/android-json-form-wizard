@@ -26,9 +26,6 @@ import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 
-/**
- * Created by x.carmona on 6/27/18.
- */
 public class ImagePicker {
 
     private static final String TAG = "ImagePicker";
@@ -43,8 +40,10 @@ public class ImagePicker {
                 .EXTERNAL_CONTENT_URI);
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePhotoIntent.putExtra("return-data", true);
-        Uri uri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName(), getTempFile
-                (context));
+        Uri uri = FileProvider
+                .getUriForFile(context, context.getApplicationContext().getPackageName(),
+                        getTempFile
+                                (context));
         takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         intentList = addIntentsToList(context, intentList, pickIntent);
         intentList = addIntentsToList(context, intentList, takePhotoIntent);
@@ -52,13 +51,15 @@ public class ImagePicker {
         if (intentList.size() > 0) {
             chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
                     context.getString(R.string.image_picker));
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+            chooserIntent
+                    .putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
         }
 
         return chooserIntent;
     }
 
-    private static List<Intent> addIntentsToList(Context context, List<Intent> list, Intent intent) {
+    private static List<Intent> addIntentsToList(Context context, List<Intent> list,
+            Intent intent) {
         List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent, 0);
         for (ResolveInfo resolveInfo : resInfo) {
             String packageName = resolveInfo.activityInfo.packageName;
@@ -72,18 +73,20 @@ public class ImagePicker {
 
 
     public static Bitmap getImageFromResult(Context context, int resultCode,
-                                            Intent imageReturnedIntent) {
+            Intent imageReturnedIntent) {
         Log.d(TAG, "getImageFromResult, resultCode: " + resultCode);
         Bitmap bm = null;
         File imageFile = getTempFile(context);
         if (resultCode == Activity.RESULT_OK) {
             Uri selectedImage;
             boolean isCamera = (imageReturnedIntent == null ||
-                    imageReturnedIntent.getData() == null  ||
+                    imageReturnedIntent.getData() == null ||
                     imageReturnedIntent.getData().toString().contains(imageFile.toString()));
             if (isCamera) {
-                selectedImage = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName(), getTempFile
-                        (context));
+                selectedImage = FileProvider
+                        .getUriForFile(context, context.getApplicationContext().getPackageName(),
+                                getTempFile
+                                        (context));
             } else {
                 selectedImage = imageReturnedIntent.getData();
             }
@@ -104,23 +107,33 @@ public class ImagePicker {
     }
 
     private static Bitmap decodeBitmap(Context context, Uri theUri, int sampleSize) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = sampleSize;
-
         AssetFileDescriptor fileDescriptor = null;
         try {
-            fileDescriptor = context.getContentResolver().openAssetFileDescriptor(theUri, "r");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sampleSize;
+            try {
+                fileDescriptor = context.getContentResolver().openAssetFileDescriptor(theUri, "r");
+
+                Bitmap actuallyUsableBitmap = BitmapFactory.decodeFileDescriptor(
+                        fileDescriptor.getFileDescriptor(), null, options);
+                Log.d(TAG, options.inSampleSize + " sample method bitmap ... " +
+                        actuallyUsableBitmap.getWidth() + " " + actuallyUsableBitmap.getHeight());
+                return actuallyUsableBitmap;
+
+            } catch (FileNotFoundException e) {
+                Log.e(TAG, "decodeBitmap: error", e);
+            }
+            return null;
+        } finally {
+            if (fileDescriptor != null) {
+                try {
+                    fileDescriptor.close();
+                } catch (Exception e) {
+                    //Ignore
+                }
+            }
         }
 
-        Bitmap actuallyUsableBitmap = BitmapFactory.decodeFileDescriptor(
-                fileDescriptor.getFileDescriptor(), null, options);
-
-        Log.d(TAG, options.inSampleSize + " sample method bitmap ... " +
-                actuallyUsableBitmap.getWidth() + " " + actuallyUsableBitmap.getHeight());
-
-        return actuallyUsableBitmap;
     }
 
     /**
@@ -154,8 +167,7 @@ public class ImagePicker {
             if (Build.VERSION.SDK_INT > 23) {
                 inputStream = context.getContentResolver().openInputStream(imageFile);
                 exif = new ExifInterface(inputStream);
-            }
-            else {
+            } else {
                 exif = new ExifInterface(imageFile.getPath());
             }
 
@@ -175,16 +187,16 @@ public class ImagePicker {
                     break;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "getRotationFromCamera: error", e);
 
         } finally {
-          if(inputStream!=null){
-              try {
-                  inputStream.close();
-              }catch(IOException ioe){
-                  ioe.printStackTrace();
-              }
-          }
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Log.e(TAG, "getRotationFromCamera: error closing stream", ioe);
+                }
+            }
         }
         return rotate;
     }
@@ -214,7 +226,8 @@ public class ImagePicker {
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
-            Bitmap bmOut = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+            Bitmap bmOut = Bitmap
+                    .createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
             return bmOut;
         }
         return bm;

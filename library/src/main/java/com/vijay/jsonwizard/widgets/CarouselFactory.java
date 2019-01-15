@@ -4,6 +4,7 @@ package com.vijay.jsonwizard.widgets;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -43,22 +44,27 @@ public class CarouselFactory implements FormWidgetFactory {
     private static final String TAG = "CarouselFactory";
 
     @Override
-    public List<View> getViewsFromJson(String stepName, Context context, JSONObject jsonObject, CommonListener listener, JsonFormBundle bundle, JsonExpressionResolver resolver, int visualizationMode) throws JSONException {
+    public List<View> getViewsFromJson(String stepName, Context context, JSONObject jsonObject,
+            CommonListener listener, JsonFormBundle bundle, JsonExpressionResolver resolver,
+            int visualizationMode) throws JSONException {
         List<View> views = null;
-        switch (visualizationMode){
-            case JsonFormConstants.VISUALIZATION_MODE_READ_ONLY :
+        switch (visualizationMode) {
+            case JsonFormConstants.VISUALIZATION_MODE_READ_ONLY:
                 views = getReadOnlyViewsFromJson(context, jsonObject, bundle);
                 break;
             default:
-                views = getEditableViewsFromJson(context, jsonObject, listener, bundle,resolver);
+                views = getEditableViewsFromJson(context, jsonObject, listener, bundle, resolver);
         }
         return views;
     }
 
-    private List<View> getEditableViewsFromJson(Context context, JSONObject jsonObject, CommonListener listener, JsonFormBundle bundle, JsonExpressionResolver resolver) throws JSONException {
+    private List<View> getEditableViewsFromJson(Context context, JSONObject jsonObject,
+            CommonListener listener, JsonFormBundle bundle, JsonExpressionResolver resolver)
+            throws JSONException {
         List<View> views = new ArrayList<>(1);
 
-        DiscreteScrollView scrollView = (DiscreteScrollView) LayoutInflater.from(context).inflate(R.layout.item_carousel, null);
+        DiscreteScrollView scrollView = (DiscreteScrollView) LayoutInflater.from(context)
+                .inflate(R.layout.item_carousel, null);
 
         scrollView.setId(ViewUtil.generateViewId());
 
@@ -89,17 +95,17 @@ public class CarouselFactory implements FormWidgetFactory {
             valuesJson = jsonObject.optJSONArray("values");
         } else {
             JSONObject currentValues = getCurrentValues(context);
-            valuesJson = resolver.resolveAsArray(valuesExpression,currentValues);
+            valuesJson = resolver.resolveAsArray(valuesExpression, currentValues);
         }
 
         String imagesExpression = getImagesAsJsonExpression(jsonObject, resolver);
 
         JSONArray imagesJson;
-        if(imagesExpression == null){
+        if (imagesExpression == null) {
             imagesJson = jsonObject.optJSONArray("images");
         } else {
             JSONObject currentValues = getCurrentValues(context);
-            imagesJson = resolver.resolveAsArray(imagesExpression,currentValues);
+            imagesJson = resolver.resolveAsArray(imagesExpression, currentValues);
         }
 
         String[] values = getValues(valuesJson);
@@ -113,14 +119,15 @@ public class CarouselFactory implements FormWidgetFactory {
 
         String otherOption = bundle.resolveKey(jsonObject.optString("other"));
         String chooseOption = bundle.resolveKey(jsonObject.optString("hint"));
-        chooseOption = (TextUtils.isEmpty(chooseOption)) ? context.getString(R.string.image_picker) : chooseOption;
+        chooseOption = (TextUtils.isEmpty(chooseOption)) ? context.getString(R.string.image_picker)
+                : chooseOption;
 
         //Add choose option
         listValues.add(0, null);
         listNames.add(0, chooseOption);
         listImages.add(0, Integer.toString(R.mipmap.choose_icon));
 
-        if(!TextUtils.isEmpty(otherOption)){
+        if (!TextUtils.isEmpty(otherOption)) {
             //Add other option
             listValues.add(otherOption);
             listNames.add(otherOption);
@@ -133,9 +140,9 @@ public class CarouselFactory implements FormWidgetFactory {
 
         if (values != null && values.length > 1) {
             List<CarouselItem> data = new ArrayList<>();
-            for (int i = 0; i<listValues.size(); i++){
+            for (int i = 0; i < listValues.size(); i++) {
                 String imagePath = listImages.get(i);
-                if(!TextUtils.isEmpty(imagePath) && !isInteger(imagePath)) {
+                if (!TextUtils.isEmpty(imagePath) && !isInteger(imagePath)) {
                     imagePath = moveAssetToCache(context, imagePath, "imagenes");
                 }
                 data.add(new CarouselItem(listNames.get(i), listValues.get(i), imagePath));
@@ -159,9 +166,9 @@ public class CarouselFactory implements FormWidgetFactory {
     private JSONObject getCurrentValues(Context context) throws JSONException {
         JSONObject currentValues = null;
         if (context instanceof JsonApi) {
-           String currentJsonState = ((JsonApi) context).currentJsonState();
-           JSONObject currentJsonObject = new JSONObject(currentJsonState);
-           currentValues =  JsonFormUtils.extractDataFromForm(currentJsonObject,false);
+            String currentJsonState = ((JsonApi) context).currentJsonState();
+            JSONObject currentJsonObject = new JSONObject(currentJsonState);
+            currentValues = JsonFormUtils.extractDataFromForm(currentJsonObject, false);
         }
         return currentValues;
     }
@@ -178,28 +185,30 @@ public class CarouselFactory implements FormWidgetFactory {
         return values;
     }
 
-    private int getSelectedIdx(String[] values, String valueToSelect ) {
+    private int getSelectedIdx(String[] values, String valueToSelect) {
         int indexToSelect = -1;
         if (values != null && values.length > 0) {
             for (int i = 0; i < values.length; i++) {
-                 if (valueToSelect.equals(values[i])) {
-                     indexToSelect = i;
-                     break;
+                if (valueToSelect.equals(values[i])) {
+                    indexToSelect = i;
+                    break;
                 }
             }
         }
         return indexToSelect;
     }
 
-    private String getValuesAsJsonExpression(JSONObject jsonObject, JsonExpressionResolver resolver) {
-            String valuesExpression = jsonObject.optString("values");
-            if (resolver.isValidExpression(valuesExpression)) {
-                return valuesExpression;
-            }
-            return null;
+    private String getValuesAsJsonExpression(JSONObject jsonObject,
+            JsonExpressionResolver resolver) {
+        String valuesExpression = jsonObject.optString("values");
+        if (resolver.isValidExpression(valuesExpression)) {
+            return valuesExpression;
+        }
+        return null;
     }
 
-    private String getImagesAsJsonExpression(JSONObject jsonObject, JsonExpressionResolver resolver) {
+    private String getImagesAsJsonExpression(JSONObject jsonObject,
+            JsonExpressionResolver resolver) {
         String valuesExpression = jsonObject.optString("images");
         if (resolver.isValidExpression(valuesExpression)) {
             return valuesExpression;
@@ -207,7 +216,8 @@ public class CarouselFactory implements FormWidgetFactory {
         return null;
     }
 
-    private List<View> getReadOnlyViewsFromJson(Context context, JSONObject jsonObject, JsonFormBundle bundle) throws JSONException {
+    private List<View> getReadOnlyViewsFromJson(Context context, JSONObject jsonObject,
+            JsonFormBundle bundle) throws JSONException {
         List<View> views = new ArrayList<>(1);
         MaterialEditText editText = (MaterialEditText) LayoutInflater.from(context).inflate(
                 R.layout.item_edit_text, null);
@@ -225,7 +235,8 @@ public class CarouselFactory implements FormWidgetFactory {
     }
 
     public static ValidationStatus validate(DiscreteScrollView dsv) {
-        if (!(dsv.getTag(R.id.v_required) instanceof String) || !(dsv.getTag(R.id.error) instanceof String)) {
+        if (!(dsv.getTag(R.id.v_required) instanceof String) || !(dsv
+                .getTag(R.id.error) instanceof String)) {
             return new ValidationStatus(true, null);
         }
         Boolean isRequired = Boolean.valueOf((String) dsv.getTag(R.id.v_required));
@@ -233,28 +244,34 @@ public class CarouselFactory implements FormWidgetFactory {
             return new ValidationStatus(true, null);
         }
         int selectedItemPosition = dsv.getCurrentItem();
-        if(selectedItemPosition > 0) {
+        if (selectedItemPosition > 0) {
             return new ValidationStatus(true, null);
         }
         return new ValidationStatus(false, (String) dsv.getTag(R.id.error));
     }
 
-    private static String moveAssetToCache(Context context, String assetName, String assetFolderName){
-        File f = new File(context.getCacheDir()+File.separator+assetName);
-        if (!f.exists()) try {
+    private static String moveAssetToCache(Context context, String assetName,
+            String assetFolderName) {
 
-            InputStream is = context.getAssets().open(assetFolderName+File.separator+assetName);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
+        File f = new File(context.getCacheDir() + File.separator + assetName);
+        if (!f.exists()) {
+            try (InputStream is = context.getAssets()
+                    .open(assetFolderName + File.separator + assetName);
+                    FileOutputStream fos = new FileOutputStream(f);) {
 
+                byte[] buffer = new byte[1024];
+                int length;
 
-            FileOutputStream fos = new FileOutputStream(f);
-            fos.write(buffer);
-            fos.close();
-        } catch (Exception e) {
-            return null;
+                while ((length = is.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+                fos.flush();
+
+            } catch (Exception e) {
+                Log.e(TAG, "moveAssetToCache: Error moving asset " + assetFolderName + " to cache",
+                        e);
+                return null;
+            }
         }
         return f.getAbsolutePath();
     }
@@ -263,7 +280,7 @@ public class CarouselFactory implements FormWidgetFactory {
         try {
             Integer.parseInt(s);
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
         // only got here if we didn't return false

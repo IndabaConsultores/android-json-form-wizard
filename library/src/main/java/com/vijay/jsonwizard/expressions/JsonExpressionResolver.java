@@ -64,7 +64,7 @@ public class JsonExpressionResolver {
     }
 
     public String resolveAsString(String expression, JSONObject instance) throws JSONException {
-        JSONArray array = resolveExpression(expression,instance);
+        JSONArray array = resolveExpression(expression, instance);
         if (array == null || array.length() == 0) {
             return null;
         }
@@ -75,8 +75,8 @@ public class JsonExpressionResolver {
     }
 
     public JSONArray resolveAsArray(String expression, JSONObject instance) throws JSONException {
-        JSONArray array = resolveExpression(expression,instance);
-        if (array.length() == 0) {
+        JSONArray array = resolveExpression(expression, instance);
+        if (array == null || array.length() == 0) {
             return null;
         }
         Object item = array.opt(0);
@@ -86,7 +86,8 @@ public class JsonExpressionResolver {
         return array;
     }
 
-    private JSONArray resolveExpression(String expression, JSONObject instance) throws JSONException {
+    private JSONArray resolveExpression(String expression, JSONObject instance)
+            throws JSONException {
         String localExpression = expression;
         String externalReference = extractExternalContentReference(expression);
 
@@ -149,14 +150,15 @@ public class JsonExpressionResolver {
         try {
             array = localContext.read(localExpression);
         } catch (PathNotFoundException e) {
-            Log.d("ExpressionResolver", "existsExpression: checking for missing path "+localExpression);
+            Log.d("ExpressionResolver",
+                    "existsExpression: checking for missing path " + localExpression);
         }
 
         localContext.delete("current-values");
 
         //Check if not null values are present
-        if (array!= null && array.length()>0) {
-            for (int i = 0; i <array.length() ; i++) {
+        if (array != null && array.length() > 0) {
+            for (int i = 0; i < array.length(); i++) {
                 if (!array.isNull(i)) {
                     return true;
                 }
