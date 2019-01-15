@@ -226,9 +226,8 @@ public class ImagePicker {
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
-            Bitmap bmOut = Bitmap
+            return Bitmap
                     .createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-            return bmOut;
         }
         return bm;
     }

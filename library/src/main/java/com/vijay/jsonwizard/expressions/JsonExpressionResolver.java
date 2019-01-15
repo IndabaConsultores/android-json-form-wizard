@@ -86,8 +86,7 @@ public class JsonExpressionResolver {
         return array;
     }
 
-    private JSONArray resolveExpression(String expression, JSONObject instance)
-            throws JSONException {
+    private JSONArray resolveExpression(String expression, JSONObject instance) {
         String localExpression = expression;
         String externalReference = extractExternalContentReference(expression);
 

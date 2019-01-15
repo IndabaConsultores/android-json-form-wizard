@@ -50,7 +50,7 @@ public class CarouselFactory implements FormWidgetFactory {
         List<View> views = null;
         switch (visualizationMode) {
             case JsonFormConstants.VISUALIZATION_MODE_READ_ONLY:
-                views = getReadOnlyViewsFromJson(context, jsonObject, bundle);
+                views = getReadOnlyViewsFromJson(context, jsonObject);
                 break;
             default:
                 views = getEditableViewsFromJson(context, jsonObject, listener, bundle, resolver);
@@ -216,8 +216,8 @@ public class CarouselFactory implements FormWidgetFactory {
         return null;
     }
 
-    private List<View> getReadOnlyViewsFromJson(Context context, JSONObject jsonObject,
-            JsonFormBundle bundle) throws JSONException {
+    private List<View> getReadOnlyViewsFromJson(Context context, JSONObject jsonObject)
+            throws JSONException {
         List<View> views = new ArrayList<>(1);
         MaterialEditText editText = (MaterialEditText) LayoutInflater.from(context).inflate(
                 R.layout.item_edit_text, null);
