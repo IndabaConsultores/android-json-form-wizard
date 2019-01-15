@@ -74,7 +74,7 @@ public class JsonExpressionResolver {
         return array.getString(0);
     }
 
-    public JSONArray resolveAsArray(String expression, JSONObject instance) throws JSONException {
+    public JSONArray resolveAsArray(String expression, JSONObject instance) {
         JSONArray array = resolveExpression(expression, instance);
         if (array == null || array.length() == 0) {
             return null;
