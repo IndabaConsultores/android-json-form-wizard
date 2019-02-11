@@ -21,6 +21,7 @@ public class JsonFormConstants {
     public static final String CAROUSEL = "carousel";
 
     public static final String ORIENTATION_EXTRA = "screen_orientation";
+    public static final String CURRENT_ORIENTATION_EXTRA = "current_orientation";
     public static final int ORIENTATION_LANDSCAPE = 2;
     public static final int ORIENTATION_PORTRAIT = 1;
 

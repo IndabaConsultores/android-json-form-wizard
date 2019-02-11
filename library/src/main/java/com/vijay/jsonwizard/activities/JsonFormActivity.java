@@ -66,11 +66,9 @@ public class JsonFormActivity extends AppCompatActivity implements JsonApi {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         configureInputMethod();
-        boolean launchInit = configureOrientation();
-        if (launchInit) {
-            initialize();
-            createFragments(null);
-        }
+        configureOrientation();
+        initialize();
+        createFragments(null);
     }
 
     protected void initialize() {
@@ -233,26 +231,30 @@ public class JsonFormActivity extends AppCompatActivity implements JsonApi {
         }
     }
 
-    private boolean configureOrientation() {
-        boolean launchInit = true;
-        boolean hasOrientationExtra = getIntent().hasExtra(JsonFormConstants.ORIENTATION_EXTRA);
+    private void configureOrientation() {
+        Intent intent = getIntent();
+        int rotation;
+        boolean hasOrientationExtra = intent.hasExtra(JsonFormConstants.ORIENTATION_EXTRA);
+        boolean hasCurrentOrientationExtra = intent.hasExtra(JsonFormConstants.CURRENT_ORIENTATION_EXTRA);
         int currentOrientation = getResources().getConfiguration().orientation;
-        final int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
-        int orientation = getIntent()
-                .getIntExtra(JsonFormConstants.ORIENTATION_EXTRA, currentOrientation);
+
+        if(hasCurrentOrientationExtra){
+            rotation = getIntent().getIntExtra(JsonFormConstants.CURRENT_ORIENTATION_EXTRA,currentOrientation);
+        }else{
+            rotation = this.getWindowManager().getDefaultDisplay().getRotation();
+        }
         if (hasOrientationExtra) {
-            launchInit = currentOrientation == orientation;
+            int orientation = getIntent().getIntExtra(JsonFormConstants.ORIENTATION_EXTRA, currentOrientation);
             if (JsonFormConstants.ORIENTATION_LANDSCAPE == orientation) {
                 if (rotation == Surface.ROTATION_90) {
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 } else if (rotation == Surface.ROTATION_270) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
                 }
             } else if (JsonFormConstants.ORIENTATION_PORTRAIT == orientation) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             }
             getIntent().removeExtra(JsonFormConstants.ORIENTATION_EXTRA);
         }
-        return launchInit;
     }
 }
