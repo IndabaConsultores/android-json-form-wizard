@@ -1,8 +1,11 @@
 package com.vijay.jsonwizard.widgets;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,20 +13,25 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.internal.CheckableImageButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import com.vijay.jsonwizard.R;
+import com.vijay.jsonwizard.barcode.LivePreviewActivity;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.customviews.GenericTextWatcher;
 import com.vijay.jsonwizard.customviews.MaterialTextInputLayout;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
 import com.vijay.jsonwizard.expressions.JsonExpressionResolver;
+import com.vijay.jsonwizard.fragments.JsonFormFragment;
 import com.vijay.jsonwizard.i18n.JsonFormBundle;
+import com.vijay.jsonwizard.interfaces.ClickableFormWidget;
 import com.vijay.jsonwizard.interfaces.CommonListener;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
 import com.vijay.jsonwizard.interfaces.JsonApi;
+import com.vijay.jsonwizard.presenters.JsonFormFragmentPresenter;
 import com.vijay.jsonwizard.utils.ExpressionResolverContextUtils;
 import com.vijay.jsonwizard.utils.JsonFormUtils;
 import com.vijay.jsonwizard.utils.ValidationStatus;
@@ -38,7 +46,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BarcodeTextFactory implements FormWidgetFactory {
+public class BarcodeTextFactory implements FormWidgetFactory, ClickableFormWidget {
+
+    private static final String TAG = "Barcode";
+    private static final int RESULT_LOAD_BARCODE = 2;
 
     public static ValidationStatus validate(MaterialTextInputLayout materialTextInputLayout) {
         boolean validate = materialTextInputLayout.validate();
@@ -264,5 +275,18 @@ public class BarcodeTextFactory implements FormWidgetFactory {
     @Nullable
     private JSONObject getCurrentValues(Context context, String stepName) throws JSONException {
        return ExpressionResolverContextUtils.getCurrentValues(context, stepName);
+    }
+
+    @Override
+    public void onClick(JsonFormFragment jsonFormFragment, View v) {
+        Log.d(TAG, "onClick: barcode");
+        jsonFormFragment.hideKeyBoard();
+        Intent barcodeIntent = new Intent(v.getContext(), LivePreviewActivity.class);
+        jsonFormFragment.startActivityForResult(barcodeIntent, RESULT_LOAD_BARCODE);
+    }
+
+    @Override
+    public void onFocusChange(JsonFormFragment jsonFormFragment, boolean focus, View v) {
+
     }
 }
