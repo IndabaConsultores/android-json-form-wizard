@@ -1,6 +1,7 @@
 package com.vijay.jsonwizard.widgets;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.InputType;
@@ -20,13 +21,16 @@ import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.customviews.MaterialTextInputLayout;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
 import com.vijay.jsonwizard.expressions.JsonExpressionResolver;
+import com.vijay.jsonwizard.fragments.JsonFormFragment;
 import com.vijay.jsonwizard.i18n.JsonFormBundle;
+import com.vijay.jsonwizard.interfaces.ClickableFormWidget;
 import com.vijay.jsonwizard.interfaces.CommonListener;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
 import com.vijay.jsonwizard.interfaces.JsonApi;
 import com.vijay.jsonwizard.maps.LocationPart;
 import com.vijay.jsonwizard.maps.LocationTextWatcher;
 import com.vijay.jsonwizard.maps.LocationValueReporter;
+import com.vijay.jsonwizard.maps.MapsActivity;
 import com.vijay.jsonwizard.maps.MapsUtils;
 import com.vijay.jsonwizard.utils.ExpressionResolverContextUtils;
 import com.vijay.jsonwizard.utils.JsonFormUtils;
@@ -41,11 +45,19 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationPickerFactory implements FormWidgetFactory {
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_DEFAULT_ZOOM;
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_MAX_ZOOM;
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_MIN_ZOOM;
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CUSTOM_MARKER_ICON;
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_INITIAL_LOCATION;
+import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_USE_ACCURACY;
+
+public class LocationPickerFactory implements FormWidgetFactory, ClickableFormWidget {
 
     public static final String KEY_SUFFIX_LATITUDE = "_latitude";
     public static final String KEY_SUFFIX_LONGITUDE = "_longitude";
     public static final String KEY_SUFFIX_ACCURACY = "_accuracy";
+    private static final int RESULT_LOAD_LOCATION = 3;
 
     private static final String TAG = "JsonFormActivity";
 
@@ -384,4 +396,34 @@ public class LocationPickerFactory implements FormWidgetFactory {
         return ExpressionResolverContextUtils.getCurrentValues(context, stepName);
     }
 
+    @Override
+    public void onClick(JsonFormFragment jsonFormFragment, View v) {
+
+        Log.d(TAG, "onClick: location");
+        jsonFormFragment.hideKeyBoard();
+        Intent intent = new Intent(v.getContext(), MapsActivity.class);
+        String value = (String) v.getTag(R.id.value);
+        boolean useAccuracy = (boolean) v.getTag(R.id.accuracy);
+        if (value != null && MapsUtils.isValidPositionString(value)) {
+            intent.putExtra(EXTRA_INITIAL_LOCATION, value);
+        }
+        String customIcon = (String) v.getTag(R.id.custom_icon);
+        if (customIcon != null) {
+            intent.putExtra(EXTRA_CUSTOM_MARKER_ICON, customIcon);
+        }
+        intent.putExtra(EXTRA_USE_ACCURACY, useAccuracy);
+        intent.putExtra(EXTRA_CONFIG_MIN_ZOOM, (Double) v.getTag(R.id.map_min_zoom));
+        intent.putExtra(EXTRA_CONFIG_MAX_ZOOM, (Double) v.getTag(R.id.map_max_zoom));
+        Double defaultZoom = (Double) v.getTag(R.id.map_default_zoom);
+        if (defaultZoom != null && !defaultZoom.isNaN()) {
+            intent.putExtra(EXTRA_CONFIG_DEFAULT_ZOOM, defaultZoom);
+        }
+
+        jsonFormFragment.startActivityForResult(intent, RESULT_LOAD_LOCATION);
+    }
+
+    @Override
+    public void onFocusChange(JsonFormFragment jsonFormFragment, boolean focus, View v) {
+
+    }
 }
