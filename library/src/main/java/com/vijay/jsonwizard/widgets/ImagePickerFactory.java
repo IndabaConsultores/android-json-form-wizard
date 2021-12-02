@@ -3,6 +3,7 @@ package com.vijay.jsonwizard.widgets;
 import static com.vijay.jsonwizard.utils.FormUtils.dpToPixels;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,9 +15,12 @@ import com.vijay.jsonwizard.R;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
 import com.vijay.jsonwizard.expressions.JsonExpressionResolver;
+import com.vijay.jsonwizard.fragments.JsonFormFragment;
 import com.vijay.jsonwizard.i18n.JsonFormBundle;
+import com.vijay.jsonwizard.interfaces.ClickableFormWidget;
 import com.vijay.jsonwizard.interfaces.CommonListener;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
+import com.vijay.jsonwizard.utils.ImagePicker;
 import com.vijay.jsonwizard.utils.ImageUtils;
 import com.vijay.jsonwizard.utils.ValidationStatus;
 
@@ -31,6 +35,7 @@ import java.util.List;
  * Created by vijay on 24-05-2015.
  */
 public class ImagePickerFactory implements FormWidgetFactory {
+    private static final int RESULT_LOAD_IMG = 1;
 
     public static ValidationStatus validate(ImageView imageView) {
         if (!(imageView.getTag(R.id.v_required) instanceof String) || !(imageView.getTag(

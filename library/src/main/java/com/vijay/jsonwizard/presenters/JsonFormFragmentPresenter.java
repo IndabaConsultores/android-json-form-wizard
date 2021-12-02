@@ -499,12 +499,20 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
     }
 
     public void onClick(View v) {
-
         String key = (String) v.getTag(R.id.key);
         String type = (String) v.getTag(R.id.type);
         FormWidgetFactory formWidgetFactory =  WidgetFactoryRegistry.getWidgetFactory(type);
         if(formWidgetFactory instanceof ClickableFormWidget) {
-            ((ClickableFormWidget) formWidgetFactory).onClick((JsonFormFragment) getView(), v);
+            if (JsonFormConstants.BARCODE_TEXT.equals(type)){
+                if(checkFormPermissions()){
+                    ((ClickableFormWidget) formWidgetFactory).onClick((JsonFormFragment) getView(), v);
+                }else{
+                    Log.w(TAG, "CAMERA and STORAGE permissions required to use IMAGE widget");
+                }
+            }else{
+                ((ClickableFormWidget) formWidgetFactory).onClick((JsonFormFragment) getView(), v);
+            }
+            mCurrentKey = key;
         }else {
             if (JsonFormConstants.CHOOSE_IMAGE.equals(type)) {
                 if (checkFormPermissions()) {
@@ -519,74 +527,6 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
                     }
                 } else {
                     Log.w(TAG, "CAMERA and STORAGE permissions required to use IMAGE widget");
-                }
-            }
-
-            if (JsonFormConstants.BARCODE_TEXT.equals(type)) {
-                if (checkFormPermissions()) {
-                    Log.d(TAG, "onClick: barcode");
-                    getView().hideKeyBoard();
-                    Intent barcodeIntent = new Intent(v.getContext(), LivePreviewActivity.class);
-                    mCurrentKey = key;
-                    getView().startActivityForResult(barcodeIntent, RESULT_LOAD_BARCODE);
-
-                } else {
-                    Log.w(TAG, "CAMERA and STORAGE permissions required to use BARCODE widgets");
-                }
-            }
-
-            if (JsonFormConstants.LOCATION_PICKER.equals(type)) {
-                Log.d(TAG, "onClick: location");
-                getView().hideKeyBoard();
-                Intent intent = new Intent(v.getContext(), MapsActivity.class);
-                String value = (String) v.getTag(R.id.value);
-                boolean useAccuracy = (boolean) v.getTag(R.id.accuracy);
-                if (value != null && MapsUtils.isValidPositionString(value)) {
-                    intent.putExtra(EXTRA_INITIAL_LOCATION, value);
-                }
-                String customIcon = (String) v.getTag(R.id.custom_icon);
-                if (customIcon != null) {
-                    intent.putExtra(EXTRA_CUSTOM_MARKER_ICON, customIcon);
-                }
-                intent.putExtra(EXTRA_USE_ACCURACY, useAccuracy);
-                intent.putExtra(EXTRA_CONFIG_MIN_ZOOM, (Double) v.getTag(R.id.map_min_zoom));
-                intent.putExtra(EXTRA_CONFIG_MAX_ZOOM, (Double) v.getTag(R.id.map_max_zoom));
-                Double defaultZoom = (Double) v.getTag(R.id.map_default_zoom);
-                if (defaultZoom != null && !defaultZoom.isNaN()) {
-                    intent.putExtra(EXTRA_CONFIG_DEFAULT_ZOOM, defaultZoom);
-                }
-                mCurrentKey = key;
-                getView().startActivityForResult(intent, RESULT_LOAD_LOCATION);
-            }
-            
-            if (JsonFormConstants.RESOURCE_VIEWER.equals(type)) {
-                mCurrentKey = key;
-                getView().hideKeyBoard();
-                String resource = (String) v.getTag(R.id.value);
-                if (resource.endsWith(".html") || resource.endsWith(".htm")) {
-                    Intent intent = new Intent(v.getContext(), WebViewActivity.class);
-                    String title = (String) v.getTag(R.id.label);
-                    intent.putExtra(EXTRA_TITLE, title);
-                    intent.putExtra(EXTRA_RESOURCE, resource);
-                    getView().startActivityForResult(intent, RESULT_RESOURCE_VIEW);
-                } else if (new File(resource).exists()) {
-                    // Attempt to launch open file intent
-                    Intent intent = ResourceViewer.getOpenFileIntent(getView().getContext(), resource);
-                    getView().startActivityForResult(intent, RESULT_RESOURCE_VIEW);
-                } else if (INTENT_PATTERN.matcher(resource).matches()) {
-                    Uri uri = Uri.parse(resource);
-                    Intent intent = ResourceViewer.getCustomUriIntent(v.getContext(), uri);
-                    if (intent != null) {
-                        getView().startActivityForResult(intent, RESULT_RESOURCE_VIEW);
-                    } else {
-                        Log.w(TAG, "Cannot launch intent: " + resource);
-                    }
-                } else if (URI_PATTERN.matcher(resource).matches()) {
-                    Uri uri = Uri.parse(resource);
-                    Intent intent = ResourceViewer.getOpenUriIntent(uri);
-                    getView().startActivityForResult(intent, RESULT_RESOURCE_VIEW);
-                } else {
-                    Log.w(TAG, "Unsupported resource: " + resource);
                 }
             }
         }
@@ -665,7 +605,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         this.mVisualizationMode = visualizationMode;
     }
 
-    private boolean checkFormPermissions() {
+    public boolean checkFormPermissions() {
 
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
@@ -679,7 +619,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         return false;
     }
 
-    private boolean hasPermissions(Context context, String... permissions) {
+    private static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -688,5 +628,9 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
             }
         }
         return true;
+    }
+
+    public String getmStepName() {
+        return mStepName;
     }
 }

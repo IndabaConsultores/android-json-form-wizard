@@ -1,10 +1,12 @@
 package com.vijay.jsonwizard.widgets;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
@@ -22,12 +24,16 @@ import com.vijay.jsonwizard.R;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
 import com.vijay.jsonwizard.expressions.JsonExpressionResolver;
+import com.vijay.jsonwizard.fragments.JsonFormFragment;
 import com.vijay.jsonwizard.i18n.JsonFormBundle;
+import com.vijay.jsonwizard.interfaces.ClickableFormWidget;
 import com.vijay.jsonwizard.interfaces.CommonListener;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
 import com.vijay.jsonwizard.interfaces.JsonApi;
+import com.vijay.jsonwizard.resourceviewer.WebViewActivity;
 import com.vijay.jsonwizard.utils.ExpressionResolverContextUtils;
 import com.vijay.jsonwizard.utils.JsonFormUtils;
+import com.vijay.jsonwizard.utils.ResourceViewer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,10 +41,17 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
-public class ResourceViewerFactory implements FormWidgetFactory {
+import static com.vijay.jsonwizard.resourceviewer.WebViewActivity.EXTRA_RESOURCE;
+import static com.vijay.jsonwizard.resourceviewer.WebViewActivity.EXTRA_TITLE;
+
+public class ResourceViewerFactory implements FormWidgetFactory, ClickableFormWidget {
 
     private static final String TAG = "ResourceViewerWidget";
+    private static final int RESULT_RESOURCE_VIEW = 4;
+    private static final Pattern INTENT_PATTERN = Pattern.compile("^intent:\\/\\/[^\\s]+\\/[^\\s|\\?]+(\\?([^\\s|=]+=[^\\s|&]+(&[^\\s|=]+=[^\\s|&]+)*)?)?$");
+    private static final Pattern URI_PATTERN = Pattern.compile("^\\w+:[^\\s]+$");
 
     @Override
     public List<View> getViewsFromJson(String stepName, final Context context, JSONObject jsonObject, final CommonListener listener,
@@ -204,4 +217,39 @@ public class ResourceViewerFactory implements FormWidgetFactory {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, context.getResources().getDisplayMetrics());
     }
 
+    @Override
+    public void onClick(JsonFormFragment jsonFormFragment, View v) {
+        jsonFormFragment.hideKeyBoard();
+        String resource = (String) v.getTag(R.id.value);
+        if (resource.endsWith(".html") || resource.endsWith(".htm")) {
+            Intent intent = new Intent(v.getContext(), WebViewActivity.class);
+            String title = (String) v.getTag(R.id.label);
+            intent.putExtra(EXTRA_TITLE, title);
+            intent.putExtra(EXTRA_RESOURCE, resource);
+            jsonFormFragment.startActivityForResult(intent, RESULT_RESOURCE_VIEW);
+        } else if (new File(resource).exists()) {
+            // Attempt to launch open file intent
+            Intent intent = ResourceViewer.getOpenFileIntent(jsonFormFragment.getContext(), resource);
+            jsonFormFragment.startActivityForResult(intent, RESULT_RESOURCE_VIEW);
+        } else if (INTENT_PATTERN.matcher(resource).matches()) {
+            Uri uri = Uri.parse(resource);
+            Intent intent = ResourceViewer.getCustomUriIntent(v.getContext(), uri);
+            if (intent != null) {
+                jsonFormFragment.startActivityForResult(intent, RESULT_RESOURCE_VIEW);
+            } else {
+                Log.w(TAG, "Cannot launch intent: " + resource);
+            }
+        } else if (URI_PATTERN.matcher(resource).matches()) {
+            Uri uri = Uri.parse(resource);
+            Intent intent = ResourceViewer.getOpenUriIntent(uri);
+            jsonFormFragment.startActivityForResult(intent, RESULT_RESOURCE_VIEW);
+        } else {
+            Log.w(TAG, "Unsupported resource: " + resource);
+        }
+    }
+
+    @Override
+    public void onFocusChange(JsonFormFragment jsonFormFragment, boolean focus, View v) {
+
+    }
 }
