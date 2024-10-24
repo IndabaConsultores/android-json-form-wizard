@@ -107,7 +107,7 @@ public class SignatureActivity extends AppCompatActivity{
 
     private void saveImage() {
         String fileName = String.valueOf(System.currentTimeMillis());
-        File file = new File(getExternalCacheDir(), fileName + ".jpg");
+        File file = new File(getExternalFilesDir(null), fileName + ".jpg");
         bitmap = Bitmap.createBitmap(mContent.getWidth(), mContent.getHeight(), Bitmap.Config.RGB_565);
         final Canvas canvas = new Canvas(bitmap);
         view.draw(canvas);

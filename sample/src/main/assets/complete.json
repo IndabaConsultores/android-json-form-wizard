@@ -8,6 +8,16 @@
                 "uploadButtonText": "Upload"
             },
             {
+            "key": "signature",
+            "type": "signature",
+            "signButtonText": "Firmar",
+            "timestamp": "true",
+            "v_required": {
+                "value": "true",
+                "err": "Debes añadir una firma para poder continuar"
+            }
+            },
+            {
                 "key": "name",
                 "type": "edit_text",
                 "hint": "${step1.name}",

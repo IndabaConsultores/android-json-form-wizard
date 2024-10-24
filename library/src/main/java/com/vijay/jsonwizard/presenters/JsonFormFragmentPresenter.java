@@ -471,7 +471,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
             Bitmap bitmap = ImagePicker.getImageFromResult(context, resultCode, data);
             //
             if (bitmap != null) {
-                File image = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".jpg");
+                File image = new File(context.getExternalFilesDir(null), System.currentTimeMillis() + ".jpg");
                 ImageUtils.saveToFile(bitmap, image);
                 getView().updateRelevantImageView(bitmap, image.getAbsolutePath(), mCurrentKey,mStepName);
             }
@@ -480,7 +480,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         if (requestCode == RESULT_LOAD_SIGNATURE && resultCode == SignatureActivity.RESULT_OK) {
             Context context = getView().getContext();
             String fileName = data.getStringExtra("signatureFileName");
-            File image = new File(context.getExternalCacheDir(), fileName + ".jpg");
+            File image = new File(context.getExternalFilesDir(null), fileName + ".jpg");
             String filePath = image.getAbsolutePath();
             Bitmap bitmap = BitmapFactory.decodeFile(filePath);
             ImageUtils.saveToFile(bitmap, image);
