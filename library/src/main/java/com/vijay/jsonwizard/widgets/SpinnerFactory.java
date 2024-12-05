@@ -191,8 +191,7 @@ public class SpinnerFactory implements FormWidgetFactory {
         EditText editText = textInputLayout.getEditText();
         editText.setId(View.generateViewId());
         final String hint = jsonObject.getString("hint");
-        editText.setHint(hint);
-
+        textInputLayout.setHint(hint);
         textInputLayout.setTag(R.id.key, jsonObject.getString("key"));
         textInputLayout.setTag(R.id.type, jsonObject.getString("type"));
         editText.setTag(R.id.key, jsonObject.getString("key"));
