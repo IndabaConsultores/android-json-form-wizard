@@ -1,10 +1,18 @@
 package com.vijay.jsonwizard.mvp;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 /**
  * Created by vijay on 4/21/15.
@@ -34,21 +42,55 @@ public abstract class BaseActivity<VS extends ViewState> extends AppCompatActivi
     @Override
     public void setContentView(int layoutResID) {
         super.setContentView(layoutResID);
+        setEdgeToEdge();
     }
 
     @Override
     public void setContentView(View view) {
         super.setContentView(view);
+        setEdgeToEdge();
     }
 
     @Override
     public void setContentView(View view, ViewGroup.LayoutParams params) {
         super.setContentView(view, params);
+        setEdgeToEdge();
     }
 
     @Override
     public void addContentView(View view, ViewGroup.LayoutParams params) {
         super.addContentView(view, params);
+    }
+
+    private void setEdgeToEdge() {
+        View rootView = findViewById(android.R.id.content);
+        Window window = getWindow();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+
+            ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+
+                Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+
+                return insets;
+            });
+
+            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+        } else {
+            WindowInsetsControllerCompat controller =
+                    new WindowInsetsControllerCompat(window, rootView);
+            controller.setSystemBarsBehavior(
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            );
+
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+        }
     }
 
     protected abstract VS createViewState();

@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.vijay.jsonwizard.demo"
-    compileSdk 34
-    buildToolsVersion "34.0.0"
+    namespace 'com.vijay.jsonwizard.demo'
+    compileSdk 35
+    buildToolsVersion "35.0.0"
 
     defaultConfig {
         applicationId "com.vijay.jsonwizard.demo"
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 3
         versionName "1.2.2"
     }

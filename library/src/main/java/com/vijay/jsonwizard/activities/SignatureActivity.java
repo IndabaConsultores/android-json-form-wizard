@@ -1,34 +1,32 @@
 package com.vijay.jsonwizard.activities;
 
-import static com.vijay.jsonwizard.state.StateContract.COL_JSON;
-
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 
 import com.vijay.jsonwizard.R;
@@ -38,8 +36,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
-
 
 public class SignatureActivity extends AppCompatActivity{
 
@@ -61,6 +57,34 @@ public class SignatureActivity extends AppCompatActivity{
         setupView();
         setupButtons();
 
+        View rootView = findViewById(android.R.id.content);
+        Window window = getWindow();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+
+            ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+                Insets systemBars = insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+
+                Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+
+                return insets;
+            });
+
+            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+        } else {
+            WindowInsetsControllerCompat controller =
+                    new WindowInsetsControllerCompat(window, rootView);
+            controller.setSystemBarsBehavior(
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            );
+
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+        }
     }
 
     private void getExtras() {

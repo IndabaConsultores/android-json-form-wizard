@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath 'com.android.tools.build:gradle:8.6.0'
         classpath 'com.google.gms:google-services:4.4.1'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3'
 
@@ -45,6 +45,3 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-
-
