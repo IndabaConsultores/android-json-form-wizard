@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.vijay.jsonwizard.demo"
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 35
         versionCode 3
         versionName "1.2.2"
