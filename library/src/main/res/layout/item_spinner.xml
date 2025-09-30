@@ -6,6 +6,7 @@
     app:ms_alignLabels="true"
     app:ms_arrowSize="16dp"
     app:ms_multiline="false"
+    app:ms_baseColor="?attr/jsonSpinnerBaseColor"
     />
 
 

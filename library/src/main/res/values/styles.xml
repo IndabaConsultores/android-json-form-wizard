@@ -1,2 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="LibraryTheme">
+        <item name="jsonSpinnerBaseColor">@color/grey</item>
+    </style>
 </resources>

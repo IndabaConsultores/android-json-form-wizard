@@ -2,31 +2,26 @@ package com.vijay.jsonwizard.widgets;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.material.textfield.MaterialAutoCompleteTextView;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import com.vijay.jsonwizard.R;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
-import com.vijay.jsonwizard.customviews.MaterialTextInputLayout;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
 import com.vijay.jsonwizard.expressions.JsonExpressionResolver;
 import com.vijay.jsonwizard.i18n.JsonFormBundle;
 import com.vijay.jsonwizard.interfaces.CommonListener;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
-import com.vijay.jsonwizard.interfaces.JsonApi;
 import com.vijay.jsonwizard.utils.ExpressionResolverContextUtils;
-import com.vijay.jsonwizard.utils.JsonFormUtils;
 import com.vijay.jsonwizard.utils.ValidationStatus;
 
 import org.json.JSONArray;
@@ -191,7 +186,13 @@ public class SpinnerFactory implements FormWidgetFactory {
         EditText editText = textInputLayout.getEditText();
         editText.setId(View.generateViewId());
         final String hint = jsonObject.getString("hint");
-        textInputLayout.setHint(hint);
+        try {
+            textInputLayout.setHint(hint);
+        } catch (Exception e) {
+            Log.d(SpinnerFactory.class.getSimpleName(), "material not available setting hint on editText");
+            editText.setHint(hint);
+        }
+
         textInputLayout.setTag(R.id.key, jsonObject.getString("key"));
         textInputLayout.setTag(R.id.type, jsonObject.getString("type"));
         editText.setTag(R.id.key, jsonObject.getString("key"));
