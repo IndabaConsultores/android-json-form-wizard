@@ -187,10 +187,10 @@ public class SpinnerFactory implements FormWidgetFactory {
         editText.setId(View.generateViewId());
         final String hint = jsonObject.getString("hint");
         try {
-            textInputLayout.setHint(hint);
-        } catch (Exception e) {
-            Log.d(SpinnerFactory.class.getSimpleName(), "material not available setting hint on editText");
             editText.setHint(hint);
+        } catch (Exception e) {
+            Log.d(SpinnerFactory.class.getSimpleName(), "material not available setting hint on textInputLayout");
+            textInputLayout.setHint(hint);
         }
 
         textInputLayout.setTag(R.id.key, jsonObject.getString("key"));
