@@ -8,6 +8,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -35,6 +36,9 @@ public class WebViewActivity extends AppCompatActivity {
         View rootView = findViewById(android.R.id.content);
         Window window = getWindow();
 
+        EdgeToEdge.enable(this);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowCompat.setDecorFitsSystemWindows(window, false);
 
@@ -49,7 +53,6 @@ public class WebViewActivity extends AppCompatActivity {
                 return insets;
             });
 
-            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
         } else {
             WindowInsetsControllerCompat controller =
                     new WindowInsetsControllerCompat(window, rootView);
@@ -57,8 +60,7 @@ public class WebViewActivity extends AppCompatActivity {
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             );
 
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+            WindowCompat.setDecorFitsSystemWindows(window, true);
         }
 
         Toolbar toolbar = findViewById(R.id.tb_top);

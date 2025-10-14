@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -66,6 +67,9 @@ public abstract class BaseActivity<VS extends ViewState> extends AppCompatActivi
         View rootView = findViewById(android.R.id.content);
         Window window = getWindow();
 
+        EdgeToEdge.enable(this);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowCompat.setDecorFitsSystemWindows(window, false);
 
@@ -80,7 +84,6 @@ public abstract class BaseActivity<VS extends ViewState> extends AppCompatActivi
                 return insets;
             });
 
-            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
         } else {
             WindowInsetsControllerCompat controller =
                     new WindowInsetsControllerCompat(window, rootView);
@@ -88,8 +91,7 @@ public abstract class BaseActivity<VS extends ViewState> extends AppCompatActivi
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             );
 
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-            WindowCompat.getInsetsController(window, window.getDecorView()).setAppearanceLightStatusBars(false);
+            WindowCompat.setDecorFitsSystemWindows(window, true);
         }
     }
 
