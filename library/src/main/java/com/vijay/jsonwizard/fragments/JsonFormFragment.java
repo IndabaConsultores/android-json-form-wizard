@@ -360,7 +360,9 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
 
     @Override
     public void backClick() {
-        getActivity().onBackPressed();
+        if(!getActivity().getSupportFragmentManager().popBackStackImmediate( ) ){
+            getActivity().finish();
+        }
     }
 
     @Override
