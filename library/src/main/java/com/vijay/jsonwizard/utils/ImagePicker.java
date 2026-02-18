@@ -47,7 +47,7 @@ public class ImagePicker {
         intentList = addIntentsToList(context, intentList, pickIntent);
         intentList = addIntentsToList(context, intentList, takePhotoIntent);
 
-        if (intentList.size() > 0) {
+        if (!intentList.isEmpty()) {
             chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
                 context.getString(R.string.image_picker));
             chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));

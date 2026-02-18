@@ -13,4 +13,10 @@
     <string name="longitude">Longitude</string>
     <string name="accuracy">Accuracy</string>
     <string name="clear_image">Clear</string>
+
+    <!-- Dialog -->
+    <string name="permission_required">Permissions required</string>
+    <string name="permission_required_message">You must accept the permissions required to use the functionality.</string>
+    <string name="accept">ACCEPT</string>
+    <string name="cancel">CANCEL</string>
 </resources>

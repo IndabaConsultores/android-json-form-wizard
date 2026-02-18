@@ -48,6 +48,22 @@
                 "resource": "docs/sample.pdf"
             },
             {
+                "key": "help",
+                "type": "resource_view",
+                "label": "Webview",
+                "resource": "docs/index.html",
+                "icon": "images/pdf.png",
+                "config": {
+                    "color": "#0645AD",
+                    "size": 24,
+                    "align": "end",
+                    "icon_width": 54,
+                    "icon_height": 54,
+                    "icon_position": "end",
+                    "icon_color": "#0645AD"
+                }
+            },
+            {
                 "key": "editGroup",
                 "type": "edit_group",
                 "optNumber": "3",
