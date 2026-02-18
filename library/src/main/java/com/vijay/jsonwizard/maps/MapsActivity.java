@@ -1,19 +1,20 @@
 package com.vijay.jsonwizard.maps;
 
-import static androidx.core.content.PermissionChecker.PERMISSION_GRANTED;
-
 import static com.vijay.jsonwizard.maps.MapsUtils.MAX_ZOOM_LEVEL;
 import static com.vijay.jsonwizard.maps.MapsUtils.MIN_ZOOM_LEVEL;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,8 +24,11 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -60,6 +64,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.vijay.jsonwizard.R;
 
+import java.util.Map;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     public static final String EXTRA_INITIAL_LOCATION = "INITIAL_LOCATION";
@@ -84,6 +90,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double mMinZoom;
     private double mMaxZoom;
     private double mDefaultZoom;
+
+    private ActivityResultLauncher<String[]> requestPermissionsLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +132,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setSupportActionBar(toolbar);
         MapsInitializer.initialize(getApplicationContext(), MapsInitializer.Renderer.LATEST, null);
         getSupportActionBar().setTitle(R.string.choose_a_location);
+
+        requestPermissionsLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            boolean grantedAny = false;
+
+            for (Map.Entry<String, Boolean> entry : result.entrySet()) {
+                if (entry.getValue()) {
+                    grantedAny = true;
+                    break;
+                }
+            }
+            if (grantedAny) {
+                attemptMarkCurrentLocation();
+            } else {
+                Log.w(TAG, "Current location permission not granted");
+                AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                alertDialog.setTitle(getString(R.string.permission_required));
+                alertDialog.setMessage(getString(R.string.permission_required_message));
+                alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.accept),
+                        (dialog, which) -> startActivity(new Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.parse("package:"+ getPackageName())
+                        )));
+                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
+                        (dialog, which) -> {
+                            markDefaultPosition();
+                            dialog.dismiss();
+                        });
+                alertDialog.show();
+
+            }
+        });
 
         // Load extra datas
         Intent intent = getIntent();
@@ -196,27 +235,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_LOCATION) {
-            boolean grantedAny = false;
-            for (int grantResult : grantResults) {
-                if (grantResult == PERMISSION_GRANTED) {
-                    grantedAny = true;
-                    break;
-                }
-            }
-            if (grantedAny) {
-                attemptMarkCurrentLocation();
-            } else {
-                Log.w(TAG, "Current location permission not granted");
-                markDefaultPosition();
-            }
-        }
-    }
-
-    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMinZoomPreference((float) mMinZoom);
@@ -239,11 +257,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Manifest.permission.ACCESS_COARSE_LOCATION)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 // Request Location permission
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE_LOCATION);
-            } else {
-                // Put marker in default position
-                markDefaultPosition();
+                requestPermissionsLauncher.launch(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION});
             }
         } else {
             final FusedLocationProviderClient fusedLocationClient =
