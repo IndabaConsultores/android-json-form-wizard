@@ -26,7 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.radiobutton.MaterialRadioButton;
@@ -305,7 +304,7 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
 
     @Override
     protected JsonFormFragmentPresenter createPresenter() {
-        JsonFormFragmentPresenter presenter = new JsonFormFragmentPresenter();
+        JsonFormFragmentPresenter presenter = new JsonFormFragmentPresenter(requireActivity());
         presenter.setVisualizationMode(mJsonApi.getVisualizationMode());
         return presenter;
     }

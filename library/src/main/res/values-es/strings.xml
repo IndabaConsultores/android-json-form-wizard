@@ -6,4 +6,10 @@
     <string name="summary">Resumen</string>
     <string name="image_picker">Seleccionar imagen</string>
     <string name="mlkit_not_found">Módulo MLkit no encontrado. Espere a que se complete la descarga</string>
+
+    <!-- Dialog -->
+    <string name="permission_required">Permisos requeridos</string>
+    <string name="permission_required_message">Debes aceptar los permisos requeridos para utilizar la funcionalidad.</string>
+    <string name="accept">ACEPTAR</string>
+    <string name="cancel">CANCELAR</string>
 </resources>

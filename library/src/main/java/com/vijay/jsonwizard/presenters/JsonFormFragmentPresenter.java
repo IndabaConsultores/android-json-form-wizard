@@ -1,15 +1,7 @@
 package com.vijay.jsonwizard.presenters;
 
 import static com.vijay.jsonwizard.constants.JsonFormConstants.MAX_PARCEL_SIZE;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_DEFAULT_ZOOM;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_MAX_ZOOM;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CONFIG_MIN_ZOOM;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_CUSTOM_MARKER_ICON;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_INITIAL_LOCATION;
 import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_RESULT_LOCATION;
-import static com.vijay.jsonwizard.maps.MapsActivity.EXTRA_USE_ACCURACY;
-import static com.vijay.jsonwizard.resourceviewer.WebViewActivity.EXTRA_RESOURCE;
-import static com.vijay.jsonwizard.resourceviewer.WebViewActivity.EXTRA_TITLE;
 import static com.vijay.jsonwizard.widgets.LocationPickerFactory.KEY_SUFFIX_ACCURACY;
 import static com.vijay.jsonwizard.widgets.LocationPickerFactory.KEY_SUFFIX_LATITUDE;
 import static com.vijay.jsonwizard.widgets.LocationPickerFactory.KEY_SUFFIX_LONGITUDE;
@@ -18,12 +10,14 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewParent;
@@ -35,7 +29,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 
@@ -43,7 +41,6 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.vijay.jsonwizard.R;
 import com.vijay.jsonwizard.activities.SignatureActivity;
-import com.vijay.jsonwizard.barcode.LivePreviewActivity;
 import com.vijay.jsonwizard.constants.JsonFormConstants;
 import com.vijay.jsonwizard.customviews.MaterialTextInputLayout;
 import com.vijay.jsonwizard.demo.resources.ResourceResolver;
@@ -53,18 +50,14 @@ import com.vijay.jsonwizard.i18n.JsonFormBundle;
 import com.vijay.jsonwizard.interactors.JsonFormInteractor;
 import com.vijay.jsonwizard.interfaces.ClickableFormWidget;
 import com.vijay.jsonwizard.interfaces.FormWidgetFactory;
-import com.vijay.jsonwizard.maps.MapsActivity;
 import com.vijay.jsonwizard.maps.MapsUtils;
 import com.vijay.jsonwizard.mvp.MvpBasePresenter;
-import com.vijay.jsonwizard.resourceviewer.WebViewActivity;
 import com.vijay.jsonwizard.state.StateProvider;
 import com.vijay.jsonwizard.utils.CarouselAdapter;
 import com.vijay.jsonwizard.utils.DateUtils;
 import com.vijay.jsonwizard.utils.ImagePicker;
 import com.vijay.jsonwizard.utils.ImageUtils;
 import com.vijay.jsonwizard.utils.JsonFormUtils;
-import com.vijay.jsonwizard.utils.ResourceViewer;
-import com.vijay.jsonwizard.utils.SignatureItem;
 import com.vijay.jsonwizard.utils.ValidationStatus;
 import com.vijay.jsonwizard.views.JsonFormFragmentView;
 import com.vijay.jsonwizard.viewstates.JsonFormFragmentViewState;
@@ -109,6 +102,43 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
     private String mCurrentKey;
     private int mVisualizationMode;
     private JsonFormInteractor mJsonFormInteractor = JsonFormInteractor.getInstance();
+
+    private final ActivityResultLauncher<String[]> requestPermissionsLauncher;
+
+    public JsonFormFragmentPresenter(Context context) {
+        super();
+        AppCompatActivity activity = (AppCompatActivity) context;
+        requestPermissionsLauncher = activity
+                .registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                    boolean allGranted = true;
+
+                    for (Boolean isGranted : result.values()) {
+                        if (!isGranted) {
+                            allGranted = false;
+                            break;
+                        }
+                    }
+
+                    if (allGranted) {
+                        launchPickerIntent();
+                    } else {
+                        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+                        alertDialog.setTitle(activity.getString(R.string.permission_required));
+                        alertDialog.setMessage(activity.getString(R.string.permission_required_message));
+                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.accept),
+                                (dialog, which) -> {
+                                    activity.startActivity(new Intent(
+                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:"+ activity.getPackageName())
+                                    ));
+                                });
+                        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getString(R.string.cancel),
+                                (dialog, which) -> dialog.dismiss());
+                        alertDialog.show();
+
+                    }
+                });
+    }
 
     public void addFormElements() {
         switch (mVisualizationMode) {
@@ -548,15 +578,13 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
             mCurrentKey = key;
         }else {
             if (JsonFormConstants.CHOOSE_IMAGE.equals(type)) {
+                mCurrentKey = key;
                 if (checkFormPermissions()) {
-                    mCurrentKey = key;
                     if (v.getTag(R.id.btn_clear) != null) {
                         getView().updateRelevantImageView(null, null, key, mStepName);
                         v.setVisibility(View.GONE);
                     } else {
-                        getView().hideKeyBoard();
-                        Intent pickerIntent = ImagePicker.getPickImageIntent(v.getContext());
-                        getView().startActivityForResult(pickerIntent, RESULT_LOAD_IMG);
+                        launchPickerIntent();
                     }
                 } else {
                     Log.w(TAG, "CAMERA and STORAGE permissions required to use IMAGE widget");
@@ -654,20 +682,25 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         this.mVisualizationMode = visualizationMode;
     }
 
-    public boolean checkFormPermissions() {
+    private void launchPickerIntent() {
+        getView().hideKeyBoard();
+        Intent pickerIntent = ImagePicker.getPickImageIntent(getView().getContext());
+        getView().startActivityForResult(pickerIntent, RESULT_LOAD_IMG);
+    }
 
-        int PERMISSION_ALL = 1;
-        String[] PERMISSIONS;
+    private boolean checkFormPermissions() {
+        String[] permissions;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             //No need to check for READ/WRITE permissions on devices with SDK 33 or above
-            PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+            permissions = new String[]{Manifest.permission.CAMERA};
         }else{
-            PERMISSIONS = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
+            permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
         }
 
-        if (!hasPermissions(getView().getContext(), PERMISSIONS)) {
-            JsonFormFragment formFragment = (JsonFormFragment) getView();
-            ActivityCompat.requestPermissions(formFragment.getActivity(), PERMISSIONS, PERMISSION_ALL);
+        JsonFormFragment formFragment = (JsonFormFragment) getView();
+
+        if (!hasPermissions(formFragment.getActivity(), permissions)) {
+            requestPermissionsLauncher.launch(permissions);
         } else {
             return true;
         }
