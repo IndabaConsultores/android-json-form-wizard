@@ -4,9 +4,12 @@ import static android.view.View.VISIBLE;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +25,12 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -51,6 +57,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by vijay on 5/7/15.
@@ -61,6 +68,8 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
     private LinearLayout mMainView;
     private Menu mMenu;
     private JsonApi mJsonApi;
+
+    private ActivityResultLauncher<String[]> requestPermissionsLauncher;
 
     public static JsonFormFragment getFormFragment(String stepName) {
         JsonFormFragment jsonFormFragment = new JsonFormFragment();
@@ -78,6 +87,8 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
         this.mJsonApi = jsonApi;
     }
 
+    public ActivityResultLauncher<String[]> getRequestPermissionsLauncher() { return requestPermissionsLauncher; }
+
     @Override
     public void onAttach(Context activity) {
         if (activity instanceof JsonApi) {
@@ -90,6 +101,33 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
+
+        requestPermissionsLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                    boolean allGranted = true;
+
+                    for(Map.Entry<String, Boolean> entry : result.entrySet()) {
+                        if(Boolean.FALSE.equals(entry.getValue())) {
+                            allGranted = false;
+                            break;
+                        }
+                    }
+
+                    if (allGranted) {
+                        presenter.launchPickerIntent();
+                    } else {
+                        AlertDialog alertDialog = new AlertDialog.Builder(requireContext()).create();
+                        alertDialog.setTitle(getString(R.string.permission_required));
+                        alertDialog.setMessage(getString(R.string.permission_required_message));
+                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.accept),
+                                (dialog, which) -> startActivity(new Intent(
+                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                        Uri.parse("package:"+ requireActivity().getPackageName())
+                                )));
+                        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel),
+                                (dialog, which) -> dialog.dismiss());
+                        alertDialog.show();
+                    }
+                });
     }
 
     @Override
@@ -304,7 +342,7 @@ public class JsonFormFragment extends MvpFragment<JsonFormFragmentPresenter, Jso
 
     @Override
     protected JsonFormFragmentPresenter createPresenter() {
-        JsonFormFragmentPresenter presenter = new JsonFormFragmentPresenter(requireActivity());
+        JsonFormFragmentPresenter presenter = new JsonFormFragmentPresenter();
         presenter.setVisualizationMode(mJsonApi.getVisualizationMode());
         return presenter;
     }

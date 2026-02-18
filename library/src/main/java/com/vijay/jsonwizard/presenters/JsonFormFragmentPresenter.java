@@ -10,14 +10,12 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewParent;
@@ -29,11 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 
@@ -102,43 +96,6 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
     private String mCurrentKey;
     private int mVisualizationMode;
     private JsonFormInteractor mJsonFormInteractor = JsonFormInteractor.getInstance();
-
-    private final ActivityResultLauncher<String[]> requestPermissionsLauncher;
-
-    public JsonFormFragmentPresenter(Context context) {
-        super();
-        AppCompatActivity activity = (AppCompatActivity) context;
-        requestPermissionsLauncher = activity
-                .registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                    boolean allGranted = true;
-
-                    for (Boolean isGranted : result.values()) {
-                        if (!isGranted) {
-                            allGranted = false;
-                            break;
-                        }
-                    }
-
-                    if (allGranted) {
-                        launchPickerIntent();
-                    } else {
-                        AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
-                        alertDialog.setTitle(activity.getString(R.string.permission_required));
-                        alertDialog.setMessage(activity.getString(R.string.permission_required_message));
-                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.accept),
-                                (dialog, which) -> {
-                                    activity.startActivity(new Intent(
-                                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                            Uri.parse("package:"+ activity.getPackageName())
-                                    ));
-                                });
-                        alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getString(R.string.cancel),
-                                (dialog, which) -> dialog.dismiss());
-                        alertDialog.show();
-
-                    }
-                });
-    }
 
     public void addFormElements() {
         switch (mVisualizationMode) {
@@ -682,7 +639,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         this.mVisualizationMode = visualizationMode;
     }
 
-    private void launchPickerIntent() {
+    public void launchPickerIntent() {
         getView().hideKeyBoard();
         Intent pickerIntent = ImagePicker.getPickImageIntent(getView().getContext());
         getView().startActivityForResult(pickerIntent, RESULT_LOAD_IMG);
@@ -700,7 +657,7 @@ public class JsonFormFragmentPresenter extends MvpBasePresenter<JsonFormFragment
         JsonFormFragment formFragment = (JsonFormFragment) getView();
 
         if (!hasPermissions(formFragment.getActivity(), permissions)) {
-            requestPermissionsLauncher.launch(permissions);
+            formFragment.getRequestPermissionsLauncher().launch(permissions);
         } else {
             return true;
         }
