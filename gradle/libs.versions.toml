@@ -1,0 +1,80 @@
+[versions]
+agp = "9.2.1"
+pluginGoogleServices = "4.4.1"
+pluginSonar = "7.3.0.8198"
+
+# AndroidX
+androidx-appcompat = "1.6.1"
+androidx-material = "1.11.0"
+androidx-camera = "1.3.1"
+
+# Google
+google-services-vision = "20.1.3"
+google-services-maps = "18.2.0"
+google-services-location = "21.1.0"
+
+# Firebase
+firebase-ml-vision = "24.1.0"
+firebase-ml-vision-barcode-model = "16.1.2"
+
+# Serialization
+gson = "2.10"
+
+# Third-party Libraries
+jsonpath = "2.6.0"
+glide = "4.12.0"
+ganfra-material-spinner = "2.0.0"
+largetool = "0.3.0"
+
+# Testing
+junit = "4.13.2"
+androidx-test-core = "1.5.0"
+androidx-junit = "1.1.5"
+androidx-test-runner= "1.5.2"
+
+# Flat dirs
+discrete-scrollview = "1.5.1"
+html-textview = "4.0"
+
+
+[libraries]
+# AndroidX Libraries
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "androidx-camera" }
+androidx-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "androidx-camera" }
+
+# Google
+google-services-vision = { group = "com.google.android.gms", name = "play-services-vision", version.ref = "google-services-vision" }
+google-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "google-services-maps" }
+google-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref  = "google-services-location" }
+
+# Firebase
+firebase-ml-vision = { group = "com.google.firebase", name = "firebase-ml-vision", version.ref = "firebase-ml-vision" }
+firebase-ml-vision-barcode-model = { group = "com.google.firebase", name = "firebase-ml-vision-barcode-model", version.ref = "firebase-ml-vision-barcode-model" }
+
+# Serialization
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# Third-party Libraries
+jsonpath = { group = "com.jayway.jsonpath", name = "json-path", version.ref = "jsonpath" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+ganfra-material-spinner = { group = "com.github.ganfra", name = "material-spinner", version.ref = "ganfra-material-spinner" }
+largetool = { group = "com.gu.android", name = "toolargetool", version.ref = "largetool" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref  = "junit" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref  = "androidx-test-core" }
+androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref  = "androidx-test-runner" }
+
+# Flat dirs
+discrete-scrollview = { group = "com.yarolegovich", name = "discrete-scrollview", version.ref = "discrete-scrollview" }
+html-textview = { group = "org.sufficientlysecure", name = "html-textview", version.ref = "html-textview" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "pluginGoogleServices" }
+sonar-scanner = { id = "org.sonarqube", version.ref = "pluginSonar" }
+
